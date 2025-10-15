@@ -1,17 +1,20 @@
 import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { CheckboxModule } from 'primeng/checkbox';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { RippleModule } from 'primeng/ripple';
 import { AppFloatingConfigurator } from '../../layout/component/app.floatingconfigurator';
+import { AuthService } from '../service/auth.service';
+import { MessageModule } from 'primeng/message';
 
 @Component({
     selector: 'app-login',
     standalone: true,
-    imports: [ButtonModule, CheckboxModule, InputTextModule, PasswordModule, FormsModule, RouterModule, RippleModule, AppFloatingConfigurator],
+    imports: [CommonModule, ButtonModule, CheckboxModule, InputTextModule, PasswordModule, FormsModule, RouterModule, RippleModule, AppFloatingConfigurator, MessageModule],
     template: `
         <app-floating-configurator />
         <div class="bg-surface-50 dark:bg-surface-950 flex items-center justify-center min-h-screen min-w-screen overflow-hidden">
@@ -41,8 +44,12 @@ import { AppFloatingConfigurator } from '../../layout/component/app.floatingconf
                         </div>
 
                         <div>
-                            <label for="email1" class="block text-surface-900 dark:text-surface-0 text-xl font-medium mb-2">Email</label>
-                            <input pInputText id="email1" type="text" placeholder="Email address" class="w-full md:w-120 mb-8" [(ngModel)]="email" />
+                            @if (errorMessage) {
+                                <p-message severity="error" [text]="errorMessage" styleClass="mb-4 w-full"></p-message>
+                            }
+
+                            <label for="username1" class="block text-surface-900 dark:text-surface-0 text-xl font-medium mb-2">Username</label>
+                            <input pInputText id="username1" type="text" placeholder="Username" class="w-full md:w-120 mb-8" [(ngModel)]="username" />
 
                             <label for="password1" class="block text-surface-900 dark:text-surface-0 font-medium text-xl mb-2">Password</label>
                             <p-password id="password1" [(ngModel)]="password" placeholder="Password" [toggleMask]="true" styleClass="mb-4" [fluid]="true" [feedback]="false"></p-password>
@@ -54,7 +61,7 @@ import { AppFloatingConfigurator } from '../../layout/component/app.floatingconf
                                 </div>
                                 <span class="font-medium no-underline ml-2 text-right cursor-pointer text-primary">Forgot password?</span>
                             </div>
-                            <p-button label="Sign In" styleClass="w-full" routerLink="/"></p-button>
+                            <p-button label="Sign In" styleClass="w-full" (onClick)="onLogin()" [loading]="isLoading"></p-button>
                         </div>
                     </div>
                 </div>
@@ -63,9 +70,44 @@ import { AppFloatingConfigurator } from '../../layout/component/app.floatingconf
     `
 })
 export class Login {
-    email: string = '';
-
+    username: string = '';
     password: string = '';
-
     checked: boolean = false;
+    errorMessage: string = '';
+    isLoading: boolean = false;
+
+    constructor(
+        private authService: AuthService,
+        private router: Router
+    ) {}
+
+    onLogin(): void {
+        this.errorMessage = '';
+        this.isLoading = true;
+
+        if (!this.username || !this.password) {
+            this.errorMessage = 'Please enter both username and password';
+            this.isLoading = false;
+            return;
+        }
+
+        this.authService.login({ username: this.username, password: this.password }).subscribe({
+            next: (response) => {
+                this.isLoading = false;
+                // Navigate to dashboard or home page
+                this.router.navigate(['/']);
+            },
+            error: (error) => {
+                this.isLoading = false;
+
+                if (error.status === 403) {
+                    this.errorMessage = error.error?.message || 'Your account has been deactivated';
+                } else if (error.status === 401) {
+                    this.errorMessage = 'Invalid username or password';
+                } else {
+                    this.errorMessage = 'An error occurred during login. Please try again.';
+                }
+            }
+        });
+    }
 }
