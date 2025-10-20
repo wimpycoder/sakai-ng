@@ -7,7 +7,6 @@ export interface Role {
     id: number;
     name: string;
     description?: string;
-    permissions: string[];
     createdAt: Date;
     userCount: number;
 }
@@ -15,13 +14,11 @@ export interface Role {
 export interface CreateRoleRequest {
     name: string;
     description?: string;
-    permissions: string[];
 }
 
 export interface UpdateRoleRequest {
     name?: string;
     description?: string;
-    permissions?: string[];
 }
 
 export interface AssignRoleRequest {

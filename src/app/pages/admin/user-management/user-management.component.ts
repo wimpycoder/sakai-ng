@@ -12,7 +12,7 @@ import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { ToastModule } from 'primeng/toast';
 import { TagModule } from 'primeng/tag';
-import { CardModule } from 'primeng/card';
+import { ToolbarModule } from 'primeng/toolbar';
 import { TooltipModule } from 'primeng/tooltip';
 
 @Component({
@@ -27,163 +27,170 @@ import { TooltipModule } from 'primeng/tooltip';
         ToastModule,
         TagModule,
         SelectModule,
-        CardModule,
+        ToolbarModule,
         TooltipModule
     ],
     providers: [MessageService],
     template: `
-        <div class="grid">
-            <div class="col-12">
-                <div class="card">
-                    <h5>User Management</h5>
-                    <p>Manage user roles and status</p>
-                    <p-toast></p-toast>
+        <p-toast />
 
-                    <p-table
-                        [value]="users"
-                        [loading]="loading"
-                        responsiveLayout="scroll"
-                        styleClass="p-datatable-gridlines"
-                        [paginator]="true"
-                        [rows]="10">
-                        <ng-template pTemplate="header">
-                            <tr>
-                                <th>ID</th>
-                                <th>Username</th>
-                                <th>Email</th>
-                                <th>Role</th>
-                                <th>Status</th>
-                                <th>Created</th>
-                                <th>Actions</th>
-                            </tr>
-                        </ng-template>
-                        <ng-template pTemplate="body" let-user>
-                            <tr>
-                                <td>{{ user.id }}</td>
-                                <td>
-                                    <span class="font-bold">{{ user.username }}</span>
-                                </td>
-                                <td>{{ user.email }}</td>
-                                <td>
-                                    <p-tag
-                                        *ngIf="user.roleName"
-                                        [value]="user.roleName"
-                                        severity="success">
-                                    </p-tag>
-                                    <span *ngIf="!user.roleName" class="text-500">No Role</span>
-                                </td>
-                                <td>
-                                    <p-tag
-                                        [value]="user.status"
-                                        [severity]="user.status === 'Active' ? 'success' : 'danger'">
-                                    </p-tag>
-                                </td>
-                                <td>{{ user.createdAt | date: 'short' }}</td>
-                                <td>
-                                    <p-button
-                                        icon="pi pi-user-edit"
-                                        label="Assign Role"
-                                        styleClass="p-button-sm p-button-text p-button-info mr-2"
-                                        (onClick)="showAssignRoleDialog(user)"
-                                        pTooltip="Assign or change role">
-                                    </p-button>
-                                    <p-button
-                                        *ngIf="user.status === 'Active'"
-                                        icon="pi pi-ban"
-                                        styleClass="p-button-sm p-button-text p-button-warning mr-2"
-                                        (onClick)="deactivateUser(user)"
-                                        pTooltip="Deactivate">
-                                    </p-button>
-                                    <p-button
-                                        *ngIf="user.status === 'Inactive'"
-                                        icon="pi pi-check"
-                                        styleClass="p-button-sm p-button-text p-button-success"
-                                        (onClick)="activateUser(user)"
-                                        pTooltip="Activate">
-                                    </p-button>
-                                </td>
-                            </tr>
-                        </ng-template>
-                        <ng-template pTemplate="emptymessage">
-                            <tr>
-                                <td colspan="7" class="text-center">No users found</td>
-                            </tr>
-                        </ng-template>
-                    </p-table>
+        <p-toolbar styleClass="mb-6">
+            <ng-template #start>
+                <h5 class="m-0">User Management</h5>
+            </ng-template>
+        </p-toolbar>
+
+        <p-table
+            [value]="users"
+            [loading]="loading"
+            [tableStyle]="{ 'min-width': '60rem' }"
+            [rowHover]="true"
+            [paginator]="true"
+            [rows]="10"
+            [rowsPerPageOptions]="[10, 20, 30]"
+            [showCurrentPageReport]="true"
+            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} users"
+            dataKey="id">
+            <ng-template #caption>
+                <div class="flex items-center justify-between">
+                    <h5 class="m-0">Manage Users</h5>
                 </div>
-            </div>
-        </div>
+            </ng-template>
+            <ng-template #header>
+                <tr>
+                    <th style="min-width: 4rem">ID</th>
+                    <th style="min-width: 12rem">Username</th>
+                    <th style="min-width: 14rem">Email</th>
+                    <th style="min-width: 10rem">Role</th>
+                    <th style="min-width: 8rem">Status</th>
+                    <th style="min-width: 12rem">Created</th>
+                    <th style="min-width: 14rem">Actions</th>
+                </tr>
+            </ng-template>
+            <ng-template #body let-user>
+                <tr>
+                    <td>{{ user.id }}</td>
+                    <td><span class="font-bold">{{ user.username }}</span></td>
+                    <td>{{ user.email }}</td>
+                    <td>
+                        <p-tag
+                            *ngIf="user.roleName"
+                            [value]="user.roleName"
+                            severity="success" />
+                        <span *ngIf="!user.roleName" class="text-500">No Role</span>
+                    </td>
+                    <td>
+                        <p-tag
+                            [value]="user.status"
+                            [severity]="user.status === 'Active' ? 'success' : 'danger'" />
+                    </td>
+                    <td>{{ user.createdAt | date: 'short' }}</td>
+                    <td>
+                        <p-button
+                            icon="pi pi-user-edit"
+                            label="Role"
+                            class="mr-2"
+                            [rounded]="true"
+                            [outlined]="true"
+                            severity="info"
+                            (click)="showAssignRoleDialog(user)"
+                            pTooltip="Assign or change role" />
+                        <p-button
+                            *ngIf="user.status === 'Active'"
+                            icon="pi pi-ban"
+                            [rounded]="true"
+                            [outlined]="true"
+                            severity="warn"
+                            (click)="deactivateUser(user)"
+                            pTooltip="Deactivate" />
+                        <p-button
+                            *ngIf="user.status === 'Inactive'"
+                            icon="pi pi-check"
+                            [rounded]="true"
+                            [outlined]="true"
+                            severity="success"
+                            (click)="activateUser(user)"
+                            pTooltip="Activate" />
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template #emptymessage>
+                <tr>
+                    <td colspan="7" class="text-center">No users found</td>
+                </tr>
+            </ng-template>
+        </p-table>
 
         <!-- Assign Role Dialog -->
         <p-dialog
             [(visible)]="displayAssignDialog"
             header="Assign Role to User"
             [modal]="true"
-            [style]="{width: '450px'}"
-            [closable]="true">
-            <div class="p-fluid" *ngIf="selectedUser">
-                <div class="field mb-4">
-                    <label class="font-bold">User:</label>
-                    <div class="text-lg">{{ selectedUser.username }}</div>
-                    <div class="text-sm text-500">{{ selectedUser.email }}</div>
-                </div>
-
-                <div class="field mb-4" *ngIf="selectedUser.roleName">
-                    <label class="font-bold">Current Role:</label>
+            [style]="{ width: '450px', maxHeight: '90vh' }"
+            [contentStyle]="{ overflow: 'visible' }">
+            <ng-template #content>
+                <div class="flex flex-col gap-6" *ngIf="selectedUser">
                     <div>
-                        <p-tag [value]="selectedUser.roleName" severity="info"></p-tag>
+                        <label class="block font-bold mb-2">User:</label>
+                        <div class="text-lg">{{ selectedUser.username }}</div>
+                        <div class="text-sm text-500">{{ selectedUser.email }}</div>
+                    </div>
+
+                    <div *ngIf="selectedUser.roleName">
+                        <label class="block font-bold mb-2">Current Role:</label>
+                        <p-tag [value]="selectedUser.roleName" severity="info" />
+                    </div>
+
+                    <div>
+                        <label for="role" class="block font-bold mb-3">Select New Role</label>
+                        <p-select
+                            [(ngModel)]="selectedRoleId"
+                            [options]="roleOptions"
+                            optionLabel="name"
+                            optionValue="id"
+                            placeholder="Select a role"
+                            [showClear]="true"
+                            [appendTo]="'body'"
+                            [filter]="true"
+                            filterPlaceholder="Search roles..."
+                            fluid>
+                            <ng-template #selecteditem let-option>
+                                <div *ngIf="option">
+                                    <div class="font-bold">{{ option.name }}</div>
+                                    <div class="text-sm text-500">{{ option.description }}</div>
+                                </div>
+                            </ng-template>
+                            <ng-template #item let-option>
+                                <div>
+                                    <div class="font-bold">{{ option.name }}</div>
+                                    <div class="text-sm text-500">{{ option.description }}</div>
+                                </div>
+                            </ng-template>
+                        </p-select>
+                        <small class="text-500 mt-2 block">
+                            Leave empty to remove role from user
+                        </small>
                     </div>
                 </div>
+            </ng-template>
 
-                <div class="field">
-                    <label for="role">Select New Role</label>
-                    <p-select
-                        [(ngModel)]="selectedRoleId"
-                        [options]="roleOptions"
-                        optionLabel="name"
-                        optionValue="id"
-                        placeholder="Select a role"
-                        [showClear]="true"
-                        styleClass="w-full">
-                        <ng-template #selecteditem let-option>
-                            <div *ngIf="option">
-                                <div class="font-bold">{{ option.name }}</div>
-                                <div class="text-sm text-500">{{ option.description }}</div>
-                            </div>
-                        </ng-template>
-                        <ng-template #item let-option>
-                            <div>
-                                <div class="font-bold">{{ option.name }}</div>
-                                <div class="text-sm text-500">{{ option.description }}</div>
-                            </div>
-                        </ng-template>
-                    </p-select>
-                    <small class="text-500 mt-2 block">
-                        Leave empty to remove role from user
-                    </small>
-                </div>
-            </div>
-
-            <ng-template pTemplate="footer">
+            <ng-template #footer>
                 <p-button
                     label="Cancel"
                     icon="pi pi-times"
-                    (onClick)="hideAssignDialog()"
-                    styleClass="p-button-text">
-                </p-button>
+                    text
+                    (click)="hideAssignDialog()" />
                 <p-button
                     *ngIf="selectedRoleId"
                     label="Assign Role"
                     icon="pi pi-check"
-                    (onClick)="assignRole()">
-                </p-button>
+                    (click)="assignRole()" />
                 <p-button
                     *ngIf="!selectedRoleId && selectedUser?.roleId"
                     label="Remove Role"
                     icon="pi pi-trash"
-                    (onClick)="unassignRole()"
-                    styleClass="p-button-warning">
-                </p-button>
+                    severity="warn"
+                    (click)="unassignRole()" />
             </ng-template>
         </p-dialog>
     `,
@@ -220,7 +227,8 @@ export class UserManagementComponent implements OnInit {
                 this.messageService.add({
                     severity: 'error',
                     summary: 'Error',
-                    detail: 'Failed to load users'
+                    detail: 'Failed to load users',
+                    life: 3000
                 });
                 this.loading = false;
             }
@@ -241,7 +249,8 @@ export class UserManagementComponent implements OnInit {
                 this.messageService.add({
                     severity: 'error',
                     summary: 'Error',
-                    detail: 'Failed to load roles'
+                    detail: 'Failed to load roles',
+                    life: 3000
                 });
             }
         });
@@ -271,8 +280,9 @@ export class UserManagementComponent implements OnInit {
             next: () => {
                 this.messageService.add({
                     severity: 'success',
-                    summary: 'Success',
-                    detail: 'Role assigned successfully'
+                    summary: 'Successful',
+                    detail: 'Role assigned successfully',
+                    life: 3000
                 });
                 this.loadUsers();
                 this.hideAssignDialog();
@@ -281,7 +291,8 @@ export class UserManagementComponent implements OnInit {
                 this.messageService.add({
                     severity: 'error',
                     summary: 'Error',
-                    detail: error.error?.message || 'Failed to assign role'
+                    detail: error.error?.message || 'Failed to assign role',
+                    life: 3000
                 });
             }
         });
@@ -294,8 +305,9 @@ export class UserManagementComponent implements OnInit {
             next: () => {
                 this.messageService.add({
                     severity: 'success',
-                    summary: 'Success',
-                    detail: 'Role removed successfully'
+                    summary: 'Successful',
+                    detail: 'Role removed successfully',
+                    life: 3000
                 });
                 this.loadUsers();
                 this.hideAssignDialog();
@@ -304,7 +316,8 @@ export class UserManagementComponent implements OnInit {
                 this.messageService.add({
                     severity: 'error',
                     summary: 'Error',
-                    detail: error.error?.message || 'Failed to remove role'
+                    detail: error.error?.message || 'Failed to remove role',
+                    life: 3000
                 });
             }
         });
@@ -315,8 +328,9 @@ export class UserManagementComponent implements OnInit {
             next: () => {
                 this.messageService.add({
                     severity: 'success',
-                    summary: 'Success',
-                    detail: `User ${user.username} activated successfully`
+                    summary: 'Successful',
+                    detail: `User ${user.username} activated successfully`,
+                    life: 3000
                 });
                 this.loadUsers();
             },
@@ -324,7 +338,8 @@ export class UserManagementComponent implements OnInit {
                 this.messageService.add({
                     severity: 'error',
                     summary: 'Error',
-                    detail: 'Failed to activate user'
+                    detail: 'Failed to activate user',
+                    life: 3000
                 });
             }
         });
@@ -335,8 +350,9 @@ export class UserManagementComponent implements OnInit {
             next: () => {
                 this.messageService.add({
                     severity: 'success',
-                    summary: 'Success',
-                    detail: `User ${user.username} deactivated successfully`
+                    summary: 'Successful',
+                    detail: `User ${user.username} deactivated successfully`,
+                    life: 3000
                 });
                 this.loadUsers();
             },
@@ -344,7 +360,8 @@ export class UserManagementComponent implements OnInit {
                 this.messageService.add({
                     severity: 'error',
                     summary: 'Error',
-                    detail: 'Failed to deactivate user'
+                    detail: 'Failed to deactivate user',
+                    life: 3000
                 });
             }
         });
