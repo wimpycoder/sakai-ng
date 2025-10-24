@@ -10,6 +10,7 @@ export interface User {
     status: string;
     roleId?: number;
     roleName?: string;
+    companyId?: number;
     createdAt: Date;
 }
 

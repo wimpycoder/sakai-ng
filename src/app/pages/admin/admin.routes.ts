@@ -19,5 +19,14 @@ export const adminRoutes: Routes = [
             ),
         canActivate: [roleGuard],
         data: { roles: ['Admin'] }
+    },
+    {
+        path: 'companies',
+        loadComponent: () =>
+            import('./companies/company-management.component').then(
+                (m) => m.CompanyManagementComponent
+            ),
+        canActivate: [roleGuard],
+        data: { roles: ['Admin'] }
     }
 ];

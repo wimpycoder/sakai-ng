@@ -1,8 +1,10 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, inject, Injector } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { UserAssignmentService } from './user-assignment.service';
+import { BranchContextService } from './branch-context.service';
 
 export interface LoginRequest {
     username: string;
@@ -13,6 +15,7 @@ export interface RegisterRequest {
     username: string;
     password: string;
     email: string;
+    companyId?: number;
 }
 
 export interface AuthResponse {
@@ -32,15 +35,45 @@ export class AuthService {
     private isAuthenticatedSubject = new BehaviorSubject<boolean>(this.hasToken());
     public isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
 
-    constructor(private http: HttpClient, private router: Router) {}
+    constructor(
+        private http: HttpClient,
+        private router: Router,
+        private injector: Injector
+    ) {}
 
     login(credentials: LoginRequest): Observable<AuthResponse> {
         return this.http.post<AuthResponse>(`${this.apiUrl}/auth/login`, credentials).pipe(
-            tap(response => {
-                if (response.token) {
-                    this.setToken(response.token);
-                    this.setUser(response);
-                    this.isAuthenticatedSubject.next(true);
+            tap({
+                next: (response) => {
+                    if (response.token) {
+                        this.setToken(response.token);
+                        this.setUser(response);
+                        this.isAuthenticatedSubject.next(true);
+
+                        // After login, fetch user navigation data
+                        // Use setTimeout to avoid issues with lazy injection during response handling
+                        setTimeout(() => {
+                            try {
+                                // Fetch navigation data for Manager and Employee roles
+                                const role = this.getUserRole();
+                                if (role === 'Manager' || role === 'Employee') {
+                                    const userAssignmentService = this.injector.get(UserAssignmentService);
+                                    // Fetch navigation in background - don't let it fail the login
+                                    userAssignmentService.getMyNavigation().subscribe({
+                                        error: (err) => {
+                                            console.warn('Failed to load navigation data:', err);
+                                            // Continue anyway - user can still use the app
+                                        }
+                                    });
+                                }
+                            } catch (err) {
+                                console.warn('Error initializing navigation:', err);
+                            }
+                        }, 0);
+                    }
+                },
+                error: (err) => {
+                    console.error('Login error:', err);
                 }
             })
         );
@@ -51,6 +84,18 @@ export class AuthService {
     }
 
     logout(): void {
+        try {
+            // Clear navigation and branch context on logout
+            const userAssignmentService = this.injector.get(UserAssignmentService);
+            const branchContextService = this.injector.get(BranchContextService);
+
+            userAssignmentService.clearNavigation();
+            branchContextService.clearSelectedBranch();
+        } catch (err) {
+            console.warn('Error clearing services on logout:', err);
+            // Continue with logout anyway
+        }
+
         localStorage.removeItem(this.tokenKey);
         localStorage.removeItem(this.userKey);
         this.isAuthenticatedSubject.next(false);

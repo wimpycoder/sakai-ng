@@ -22,6 +22,8 @@ export class AppMenu implements OnInit {
     constructor(private authService: AuthService) {}
 
     ngOnInit() {
+        const userRole = this.authService.getUserRole();
+
         this.model = [
             {
                 label: 'Home',
@@ -30,8 +32,13 @@ export class AppMenu implements OnInit {
             {
                 label: 'Administration',
                 icon: 'pi pi-fw pi-shield',
-                visible: this.authService.isAdmin(), // Only show for Admin users
+                visible: userRole === 'Admin',
                 items: [
+                    {
+                        label: 'Company Management',
+                        icon: 'pi pi-fw pi-building',
+                        routerLink: ['/admin/companies']
+                    },
                     {
                         label: 'Role Management',
                         icon: 'pi pi-fw pi-users',
@@ -45,22 +52,22 @@ export class AppMenu implements OnInit {
                 ]
             },
             {
-                label: 'Ken Dimaymay',
-                icon: 'pi pi-fw pi-shield',
-                visible: this.authService.isAdmin(), // Only show for Admin users
+                label: 'Management',
+                icon: 'pi pi-fw pi-briefcase',
+                visible: userRole === 'Manager',
                 items: [
                     {
-                        label: 'Basta',
-                        icon: 'pi pi-fw pi-users',
-                        routerLink: ['/kind/of']
+                        label: 'User Management',
+                        icon: 'pi pi-fw pi-user-edit',
+                        routerLink: ['/manager/users']
                     },
                     {
-                        label: 'mao ni',
-                        icon: 'pi pi-fw pi-user-edit',
-                        routerLink: ['/ken/dimaymay']
+                        label: 'Branch Management',
+                        icon: 'pi pi-fw pi-building',
+                        routerLink: ['/manager/branches']
                     }
                 ]
-            },
+            }
         ];
     }
 }
