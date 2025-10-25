@@ -26,6 +26,19 @@ export const appRoutes: Routes = [
             {
                 path: 'manager',
                 loadChildren: () => import('./app/pages/manager/manager.routes').then(m => m.managerRoutes)
+            },
+            // Module Routes
+            {
+                path: 'procurement',
+                loadChildren: () => import('./app/pages/procurement/procurement.routes').then(m => m.procurementRoutes)
+            },
+            {
+                path: 'inventory',
+                loadChildren: () => import('./app/pages/inventory/inventory.routes').then(m => m.inventoryRoutes)
+            },
+            {
+                path: 'sales',
+                loadChildren: () => import('./app/pages/sales/sales.routes').then(m => m.salesRoutes)
             }
         ]
     },
